@@ -2,7 +2,7 @@
 import rich
 import colorama
 from colorama import init
-init(convert=True)
+init()
 from rich.console import Console
 console = Console()
 from rich.traceback import install
