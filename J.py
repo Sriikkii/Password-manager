@@ -1,6 +1,8 @@
 #import argparse
 import rich
 import colorama
+from colorama import init
+init(convert=True)
 from rich.console import Console
 console = Console()
 from rich.traceback import install
