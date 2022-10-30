@@ -1,4 +1,5 @@
 #import argparse
+import rich
 from rich.traceback import install
 install()
 from colorama import Fore, Back, Style
@@ -412,6 +413,7 @@ while True:
         tree.add("[green]View your passwords [/green]")
         tree.add("[green3]Encrypt your data[/green3]").add("[chartreuse]Encrypt your file[/chartreuse]")
         tree.add("[blue]Decrypt your data[/blue]").add("[sky_blue1]Decrypt your data[/sky_blue1]")
+        tree.add("[gold3]Create your data[/gold3]")
 
         print("[deep_pink4]The options are : [/deep_pink4]")
         print(tree)
