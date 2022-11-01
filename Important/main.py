@@ -8,6 +8,7 @@ import os
 import string
 import random
 
+
 def SetMasterPassword(mp):
     with open("key.key", "rb") as key_file:
         k = key_file.read()
@@ -16,7 +17,7 @@ def SetMasterPassword(mp):
     g = fer.encrypt(mp.encode()).decode()
     # o = input(
     #     "Enter the file name in which you want to store your master password ")
-    j = 'Master.dat'
+    j = "Master.dat"
     with open(j, "wb") as t:
         pickle.dump(g, t)
         pass
@@ -48,203 +49,223 @@ def Database():
     # return None
     with open("preferiti.txt", "w") as f:
         f.write("database")
-    con = m.connect(host="localhost", user="root",
-                    password="Modern@2021")
+    con = m.connect(host="localhost", user="root", password="Modern@2021")
     cur = con.cursor()
     cur.execute("CREATE DATABASE IF NOT EXISTS PasswordManager")
     cur.execute("USE PasswordManager")
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS Passwords (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), password VARCHAR(255))")
+        "CREATE TABLE IF NOT EXISTS Passwords (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), password VARCHAR(255))"
+    )
 
-def Submit(User , Pass):
+
+# Add passwordsand user names
+def AddPassword():
+    root = Tk()
+    root.title("Add Password")
+    root.geometry("480x240")
+    root.configure(background="#2c3e50")
+    root.resizable(False, False)
+    Name = Entry(root, width=30)
+    Name.grid(row=0, column=1, padx=20)
+    Password = Entry(root, width=30)
+    Password.grid(row=1, column=1, padx=20)
+    B1 = Button(root, text="Add", command=lambda: Add(Name.get(), Password.get()))
+    B1.grid(row=2, column=1, padx=20)
+    root.mainloop()
+
+
+def Add(Name, Password):
     with open("key.key", "rb") as r:
         k = r.read()
         key = k
         fer = Fernet(key)
-    with open("preferiti.txt", "r") as f:
-        x = f.read()
-        if x == "Binary":
-            with open('binary.dat' , 'ab') as f:
-                Pass1 = fer.encrypt(Pass.encode()).decode()
-                pickle.dump([User , Pass1], f)
-                
-        elif x == "Text":
-            with open('text.txt', 'a+') as f:
-                Pass2 = fer.encrypt(Pass.encode()).decode()
-                f.write(User)
-                f.write(" ")
-                f.write(Pass2)
-                f.write('\n')
 
+    with open("preferiti.txt", "r") as f:
+        x = f.readline()
+        if x == "Binary":
+            with open("binary.dat", "rb") as f:
+                try:
+                    y = pickle.load(f)
+                except EOFError:
+                    y = []
+            y.append(Name)
+            y.append(fer.encrypt(Password).encode())
+            with open("binary.dat", "wb") as f:
+                pickle.dump(y, f)
+        elif x == "Text":
+            with open("text.txt", "a") as f:
+                f.write(
+                    Name + ":" + fer.encrypt(Password.encode()).decode("UTF-8") + "\n"
+                )
         elif x == "database":
-            con = m.connect(host="localhost", user="root", passwd = 'Modern@2021', database="PasswordManager")
+            con = m.connect(
+                host="localhost",
+                user="root",
+                password="Modern@2021",
+                database="PasswordManager",
+            )
             cur = con.cursor()
-            Pass1 = fer.encrypt(Pass.encode()).decode()
-            cur.execute("Insert into Passwords (name, password) values (%s, %s)", (User, Pass1))
+            cur.execute(
+                "INSERT INTO Passwords (name, password) VALUES (%s, %s)",
+                (Name, fer.encrypt(Password.encode())),
+            )
             con.commit()
 
 
-def AddPassword():
-    root = Tk()
-    root.title('Add Password')
-    root.geometry('480x240')
-    root.configure(background="#2c3e50")
-    root.resizable(False, False)
-    User = Entry(root, width=30)
-    Pass = Entry(root, width=30)
-    User.grid(row=0, column=1, padx=20)
-    Pass.grid(row=1, column=1, padx=20)
-    Subbutton = Button(root, text="Submit", command = lambda: Submit(User.get(), Pass.get()))
-    Subbutton.grid(row=2, column=1, padx=20)
-    
-   
-            
-            
-    root.mainloop()    
-    
-
 def ViewPassword():
+    # Show the deatils in a tree
     root = Tk()
-    root.title('View Passwords')
-    root.geometry('480x240')
+    root.title("View Password")
+    root.geometry("202x230")
     root.configure(background="#2c3e50")
     root.resizable(False, False)
-    tree = Treeview(height=10, columns=2)
-    tree.grid(row=0, column=0, columnspan=4 , sticky=W)
-    tree.heading("#0", text="Site")
-    tree.heading("#1", text="Password")
-    with open("key.key", "rb")as r:
+    treee = Treeview(root)
+    treee["columns"] = ("one", "two")
+    treee.column("#0", width=0, stretch=NO)
+    treee.column("one", anchor=W, width=100)
+    treee.column("two", anchor=W, width=100)
+    treee.heading("one", text="Name", anchor=W)
+    treee.heading("two", text="Password", anchor=W)
+    treee.grid(row=0, column=0, columnspan=2)
+    with open("key.key", "r") as r:
         k = r.read()
-        key = k
-        fer = Fernet(key)
+    fer = Fernet(k)
+
     with open("preferiti.txt", "r") as f:
-        x = f.read()
+        x = f.readline()
         if x == "Binary":
-            with open("binary.dat" , 'r') as f:
-                l = []
-                try :
-                    while True:
-                        lx = pickle.load(f)
-                        l.append(lx)     
+            with open("binary.dat", "rb") as f:
+                try:
+                    y = pickle.load(f)
                 except EOFError:
-                        pass
-                for i in l:
-                    o = fer.decrypt(i).decode('utf-8')
-                    tree.insert("", "end", text=o.split(" ")[0], values=o.split(" ")[1])
+                    y = []
+            for i in range(0, len(y), 2):
+                treee.insert(
+                    "",
+                    0,
+                    text="",
+                    values=(y[i], fer.decrypt(y[i + 1].encode()).decode("UTF-8")),
+                )
         elif x == "Text":
             with open("text.txt", "r") as f:
-                l = f.readlines()
-                for i in l:
-                    i1 = i.split(" ")
-                    print(i1)
-                    u = fer.decrypt(i1[0]).decode('utf-8')
-                    p = fer.decrypt(i1[1]).decode('utf-8')
+                for line in f:
+                    (key, val) = line.split(":")
+                    treee.insert(
+                        "",
+                        0,
+                        text="",
+                        values=(key, fer.decrypt(val.encode()).decode("UTF-8")),
+                    )
         elif x == "database":
-            con = m.connect(host="localhost", user="root",
-                            password="Modern@2021", database="PasswordManager")
+            con = m.connect(
+                host="localhost",
+                user="root",
+                password="Modern@2021",
+                database="PasswordManager",
+            )
             cur = con.cursor()
             cur.execute("SELECT * FROM Passwords")
-            l = cur.fetchall()
-            for i in l:
-                i1 = fer.decrypt(i[1]).decode('utf-8')
-                i2 = fer.decrypt(i[2]).decode('utf-8')  
-                tree.insert("", "end", text=i1, values=i2)
+            for i in cur:
+                treee.insert(
+                    "",
+                    0,
+                    text="",
+                    values=(i[1], fer.decrypt(i[2].encode()).decode("UTF-8")),
+                )
     root.mainloop()
-    
-                    
-                    
-                
-                 
-                        
-    
+
 
 def Encryptdata():
-    with open ("key.key", "rb") as r:
+    with open("key.key", "rb") as r:
         k = r.read()
         key = k
         fer = Fernet(key)
         o = input()
-        
-        
-        E = fer.encrypt().decode('UTF-8')
+
+        E = fer.encrypt().decode("UTF-8")
         with open("key.key", "wb") as f:
             pickle.dump(E, f)
-            
 
-def DecFile (f , k):
+
+def DecFile(f, k):
     key = k
     fer = Fernet(key)
 
-    with open (f) as x :
+    with open(f) as x:
         y = x.readline()
-        m = fer.decrypt(y).decode('UTF-8')
+        m = fer.decrypt(y).decode("UTF-8")
         messagebox.showinfo("Decrypted", m)
-        
 
 
-def DecData (f , k):
+def DecData(f, k):
     fer = Fernet(k)
-    ll = fer.decrypt(f).decode('UTF-8')
+    ll = fer.decrypt(f).decode("UTF-8")
     messagebox.showinfo("Decrypted", ll)
-    
 
 
-def Decryptdata(): 
+def Decryptdata():
     root = Tk()
-    root.title('Decrypt Data')
-    root.geometry('480x240')
+    root.title("Decrypt Data")
+    root.geometry("480x240")
     root.configure(background="#2c3e50")
     root.resizable(False, False)
     DataFile = Entry(root, width=30)
     DataFile.grid(row=0, column=1, padx=20)
     Keyyyyy = Entry(root, width=30)
     Keyyyyy.grid(row=1, column=1, padx=20)
-    Bfile = Button(root, text="FileMode", command=lambda: DecFile(DataFile.get() , Keyyyyy.get())) 
+    Bfile = Button(
+        root, text="FileMode", command=lambda: DecFile(DataFile.get(), Keyyyyy.get())
+    )
     Bfile.grid(row=2, column=1, padx=20)
-    Bdata = Button(root, text="DataMode", command=lambda: DecData(DataFile.get() , Keyyyyy.get()))
+    Bdata = Button(
+        root, text="DataMode", command=lambda: DecData(DataFile.get(), Keyyyyy.get())
+    )
     Bdata.grid(row=3, column=1, padx=20)
-    
 
 
 def GeneratePassword(root):
-    k = ''.join([random.choice(string.ascii_letters + string.digits + string.punctuation ) for n in range(8,17)])
+    k = "".join(
+        [
+            random.choice(string.ascii_letters + string.digits + string.punctuation)
+            for n in range(8, 17)
+        ]
+    )
     messagebox.showinfo("Password", k)
-    
-    
-    
-    
-    
 
-def main ():
+
+def main():
     root = Tk()
-    root.title('Password Manager')
-    root.geometry('572x50')
+    root.title("Password Manager")
+    root.geometry("572x50")
     root.configure(background="#2c3e50")
     root.resizable(False, False)
-    B1 = Button(root, text='Add Password', command=lambda: AddPassword() , width=30)
-    B2 = Button(root, text='View Passwords', command=lambda: ViewPassword() , width=30)
-    B3 = Button(root, text='Encrypt Data', command=lambda: Encryptdata() , width=30)
-    B4 = Button(root, text='Decrypt Data', command=lambda: Decryptdata() , width=30)
-    B5 = Button(root, text='Generate Password', command=lambda: GeneratePassword(root) , width=30)
-    B6 = Button(root, text='Exit', command=lambda: root.destroy() , width=30)
-    B1.grid(row=1, column=0,  sticky=E)
-    B2.grid(row=1, column=1,  sticky=E)
-    B3.grid(row=1, column=2,  sticky=E)
-    B4.grid(row=2, column=0,  sticky=E)    
-    B5.grid(row=2, column=1,  sticky=E)
-    B6.grid(row=2, column=2,  sticky=E)
+    B1 = Button(root, text="Add Password", command=lambda: AddPassword(), width=30)
+    B2 = Button(root, text="View Passwords", command=lambda: ViewPassword(), width=30)
+    B3 = Button(root, text="Encrypt Data", command=lambda: Encryptdata(), width=30)
+    B4 = Button(root, text="Decrypt Data", command=lambda: Decryptdata(), width=30)
+    B5 = Button(
+        root, text="Generate Password", command=lambda: GeneratePassword(root), width=30
+    )
+    B6 = Button(root, text="Exit", command=lambda: root.destroy(), width=30)
+    B1.grid(row=1, column=0, sticky=E)
+    B2.grid(row=1, column=1, sticky=E)
+    B3.grid(row=1, column=2, sticky=E)
+    B4.grid(row=2, column=0, sticky=E)
+    B5.grid(row=2, column=1, sticky=E)
+    B6.grid(row=2, column=2, sticky=E)
     root.mainloop()
 
-def chkpass(Pass , win):
-    with open("key.key", "rb")as r:
+
+def chkpass(Pass, win):
+    with open("key.key", "rb") as r:
         k = r.read()
         key = k
         fer = Fernet(key)
 
-    with open("master.dat", 'rb') as f:
+    with open("master.dat", "rb") as f:
         try:
             x = pickle.load(f)
-            o = fer.decrypt(x).decode('utf-8')
+            o = fer.decrypt(x).decode("utf-8")
             if o == Pass:
                 print(True)
                 win.destroy()
@@ -253,53 +274,59 @@ def chkpass(Pass , win):
                 print(False)
 
         except EOFError:
-            print("End of file")    
+            print("End of file")
 
 
 def master():
     root = Tk()
-    root.title('Login')
-    root.geometry('480x240')
+    root.title("Login")
+    root.geometry("480x240")
     root.configure(background="#2c3e50")
     root.resizable(False, False)
     mp = Entry(root, width=50)
     mp.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
-    mp.config(show='*')
-    b1 = Button(root, text='Login',
-                command=lambda: chkpass(mp.get() , root))
+    mp.config(show="*")
+    b1 = Button(root, text="Login", command=lambda: chkpass(mp.get(), root))
     b1.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 
     root.mainloop()
 
 
 def ChkFirstRun():
-    print("data " , os.path.isfile("key.key"))
-    if (os.path.exists('data.dat') or os.path.exists('data.txt')) or os.path.exists('key.key'):
+    print("data ", os.path.isfile("key.key"))
+    if (os.path.exists("data.dat") or os.path.exists("data.txt")) or os.path.exists(
+        "key.key"
+    ):
         master()
     else:
-        if os.path.exists('key.key'):
+        if os.path.exists("key.key"):
             pass
         else:
             key = Fernet.generate_key()
-            with open('key.key', 'wb') as key_file:
+            with open("key.key", "wb") as key_file:
                 key_file.write(key)
         root = Tk()
-        root.title('First Run')
-        root.geometry('480x240')
+        root.title("First Run")
+        root.geometry("480x240")
         root.configure(background="#2c3e50")
         root.resizable(False, False)
         mp = Entry(root, width=50)
         mp.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
-        mp.config(show='*')
-        b1 = Button(root, text='Set Master Password',
-                    command=lambda: SetMasterPassword(mp.get()) , width=20)
-        b2 = Button(root, text='Binary',
-                    command=lambda: Biget() , width=20)
-        b3 = Button(root, text='Text', command=lambda: Textet() , width=20)
-        b4 = Button(root, text='Database', command=lambda: Database() , width=20)
+        mp.config(show="*")
+        b1 = Button(
+            root,
+            text="Set Master Password",
+            command=lambda: SetMasterPassword(mp.get()),
+            width=20,
+        )
+        b2 = Button(root, text="Binary", command=lambda: Biget(), width=20)
+        b3 = Button(root, text="Text", command=lambda: Textet(), width=20)
+        b4 = Button(root, text="Database", command=lambda: Database(), width=20)
         b1.grid(row=1, column=0, padx=10, pady=10)
         b2.grid(row=1, column=1, padx=10, pady=10)
         b3.grid(row=2, column=0, padx=10, pady=10)
         b4.grid(row=2, column=1, padx=10, pady=10)
         root.mainloop()
+
+
 ChkFirstRun()
