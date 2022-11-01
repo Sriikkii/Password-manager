@@ -1,5 +1,0 @@
-username | Password
-Anime|#Anime
-Anime 2|#unknown
-IDK|#qps
-hi|kekw
