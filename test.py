@@ -7,8 +7,8 @@ install()
 console =Console()
 from rich.prompt import Prompt
 k = Input("hi",style='bold red')"""
-import csv
-from cryptography.fernet import Fernet
+#import csv
+#from cryptography.fernet import Fernet
 #key = input("Enter the key  ")
 #fer = Fernet(key)
 #f = open("spotify.csv","w")
@@ -30,6 +30,7 @@ print(" ")
 m = fer.encrypt(k.encode()).decode()
 print(m)
 """
+import pygame
 
 
 
