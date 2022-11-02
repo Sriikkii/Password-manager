@@ -83,15 +83,8 @@ def Add(Name, Password):
     with open("preferiti.txt", "r") as f:
         x = f.readline()
         if x == "Binary":
-            with open("binary.dat", "rb") as f:
-                try:
-                    y = pickle.load(f)
-                except EOFError:
-                    y = []
-            y.append(Name)
-            y.append(fer.encrypt(Password).encode())
-            with open("binary.dat", "wb") as f:
-                pickle.dump(y, f)
+            with open("binary.dat", "ab") as f:
+                pickle.dump([Name, fer.encrypt(Password.encode()).decode()], f)
         elif x == "Text":
             with open("text.txt", "a") as f:
                 f.write(
@@ -136,16 +129,16 @@ def ViewPassword():
         if x == "Binary":
             with open("binary.dat", "rb") as f:
                 try:
-                    y = pickle.load(f)
+                    while True:
+                        a = pickle.load(f)
+                        treee.insert(
+                            "",
+                            "end",
+                            values=(a[0], fer.decrypt(a[1].encode()).decode()),
+                        )
                 except EOFError:
-                    y = []
-            for i in range(0, len(y), 2):
-                treee.insert(
-                    "",
-                    0,
-                    text="",
-                    values=(y[i], fer.decrypt(y[i + 1].encode()).decode("UTF-8")),
-                )
+                    pass
+
         elif x == "Text":
             with open("text.txt", "r") as f:
                 for line in f:
