@@ -474,7 +474,7 @@ def master():
 
 def ChkFirstRun():
     print("data ", os.path.isfile("key.key"))
-    if (os.path.exists("data.dat") or os.path.exists("data.txt")) or os.path.exists(
+    if (os.path.exists("binary.dat") or os.path.exists("text.txt")) or os.path.exists(
         "key.key"
     ):
         master()
@@ -485,6 +485,9 @@ def ChkFirstRun():
             key = Fernet.generate_key()
             with open("key.key", "wb") as key_file:
                 key_file.write(key)
+        with open("Restart.bat", "w") as f:
+            f.write("py main.py")
+
         root = Tk()
         root.title("First Run")
         root.geometry("480x240")
@@ -502,10 +505,17 @@ def ChkFirstRun():
         b2 = Button(root, text="Binary", command=lambda: Biget(), width=20)
         b3 = Button(root, text="Text", command=lambda: Textet(), width=20)
         b4 = Button(root, text="Database", command=lambda: Database(), width=20)
+        b5 = Button(
+            root,
+            text="Restart",
+            command=lambda: [root.destroy(), os.system("Restart.bat")],
+            width=20,
+        )
         b1.grid(row=1, column=0, padx=10, pady=10)
         b2.grid(row=1, column=1, padx=10, pady=10)
         b3.grid(row=2, column=0, padx=10, pady=10)
         b4.grid(row=2, column=1, padx=10, pady=10)
+        b5.grid(row=3, column=0, padx=10, pady=10)
         root.mainloop()
 
 
