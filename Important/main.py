@@ -67,8 +67,12 @@ def AddPassword():
     root.configure(background="#2c3e50")
     root.resizable(False, False)
     Name = Entry(root, width=30)
+    Lab = Label(root, text="Name", background="#2c3e50", foreground="white")
+    Lab.grid(row=0, column=0, padx=20)
     Name.grid(row=0, column=1, padx=20)
     Password = Entry(root, width=30)
+    Lab2 = Label(root, text="Password", background="#2c3e50", foreground="white")
+    Lab2.grid(row=1, column=0, padx=20)
     Password.config(show="*")
     Password.grid(row=1, column=1, padx=20)
     B1 = Button(root, text="Add", command=lambda: Add(Name.get(), Password.get()))
@@ -109,13 +113,47 @@ def Add(Name, Password):
             con.commit()
             messagebox.showinfo("Success ", "Password Added")
 
+
+class Log:
+    def __init__(self) -> None:
+        self.root = Tk()
+        self.root.title("Login")
+        self.root.geometry("480x240")
+        self.root.configure(background="#2c3e50")
+        self.root.resizable(False, False)
+        self.Lab = Label(self.root, text="Master Password", background="#2c3e50", foreground="white")
+        self.Lab.grid(row=0, column=0, padx=20)
+        self.Password = Entry(self.root, width=30)
+        self.Password.config(show="*")
+        self.Password.grid(row=0, column=1, padx=20)
+        self.B1 = Button(self.root, text="Login", command=lambda : self.Login(self.Password.get()))
+        self.B1.grid(row=1, column=1, padx=20)
+        self.root.mainloop()
+
+    def Login(self, Password):
+        with open("key.key", "rb") as r:
+            k = r.read()
+            key = k
+            fer = Fernet(key)
+        with open("Master.dat", "rb") as f:
+            x = pickle.load(f)
+            if fer.decrypt(x.encode()).decode() == Password:
+                self.root.destroy()
+                ViewPassword()
+            else:
+                messagebox.showerror("Error", "Wrong Password")
+                return False
+
+
+
+
 class ViewPassword:
     def __init__(self) -> None:
         (self.root, self.treee) = self.ViewPass()
         self.DecBut = Button(self.root, text="Decrypt", command=lambda : self.Decrypt(self.root, self.treee) , width=30)
-        self.DecBut.grid(row=1, column=0, columnspan=2)
+        self.DecBut.grid(row=1, column=0)
         self.EncBut = Button(self.root, text="Encrypt", command=lambda : self.Encrypt(self.root, self.treee) , width=30)
-        self.EncBut.grid(row=1, column=2, columnspan=2)
+        self.EncBut.grid(row=1, column=1)
         self.root.mainloop()
         self.root.mainloop()
             
@@ -141,9 +179,8 @@ class ViewPassword:
         Window.EncBut = Button(Window.root, text="Decrypt", command=lambda : self.Decrypt(Window.root, Window.treee))
         Window.EncBut.grid(row=1, column=0, columnspan=2)
 
-        
-
     def ViewPass(self):
+       
         root = Tk()
         root.title("View Password")
         root.geometry("480x480")
@@ -152,8 +189,8 @@ class ViewPassword:
         treee = Treeview(root)
         treee["columns"] = ("one", "two")
         treee.column("#0", width=0, stretch=NO)
-        treee.column("one", anchor=W, width=100)
-        treee.column("two", anchor=W, width=100)
+        treee.column("one", anchor=W, width=240)
+        treee.column("two", anchor=W, width=240)
         treee.heading("one", text="Name", anchor=W)
         treee.heading("two", text="Password", anchor=W)
         treee.grid(row=0, column=0, columnspan=2)
@@ -161,7 +198,6 @@ class ViewPassword:
             k = r.read()
             key = k
             fer = Fernet(key)
-
         with open("preferiti.txt", "r") as f:
             x = f.readline()
             if x == "Binary":
@@ -176,7 +212,6 @@ class ViewPassword:
                             )
                     except EOFError:
                         pass
-
             elif x == "Text":
                 with open("text.txt", "r") as f:
                     for line in f:
@@ -204,24 +239,26 @@ class ViewPassword:
                         values=(i[1], i[2]),
                     )
         return (root, treee)
+      
 
 
 
 def EncFile(f, t):
     k =  Fernet.generate_key()
     fer = Fernet(k)
+    f=f+".txt"
     with open(f) as j:
         data = j.readline()
         M  = fer.encrypt(data.encode()).decode("UTF-8")
-    messagebox.showinfo("Success,Encrypted the  File")
+    messagebox.showinfo("Success"  ,  "Encrypted the  File")
     t = t + '.txt'
-    with open(t, "a") as n:
-        i = 'Key : ' + k
+    with open("Nkey.txt" , 'w') as lxx:
+        lxx.write(k.decode())
+
+    with open(t, "w") as n:
         n.write(M)
         n.write("\n")
-        n.write(i)
-
-    messagebox.showinfo("Success,File Saved")
+    messagebox.showinfo("Success" , "File Saved")
     
     
     
@@ -232,12 +269,12 @@ def EncData(f, w):
     M = fer.encrypt(f.encode()).decode("UTF-8")
     messagebox.showinfo("Success,Encrypted the Data")
     t = w + '.txt'
+    with open("Nkey.txt" , 'w') as lxx:
+        lxx.write(k.decode())
     with open(t, "a") as n:
-        i = 'Key : ' + k
         n.write(M)
         n.write("\n")
-        n.write(i)
-    messagebox.showinfo("Success,File Saved")    
+    messagebox.showinfo("Success" , "File Saved")    
 
 
 
@@ -250,31 +287,36 @@ def Encryptdata():
     root1.geometry("480x240")
     root1.configure(background="#2c3e50")
     root1.resizable(False, False)
+
+    DatLabel = Label(root1, text="Enter Data/File Name", background="#2c3e50", foreground="white")
+    DatLabel.grid(row=0, column=0, columnspan=2)
+    FileocLable = Label(root1, text="Enter File Name", background="#2c3e50", foreground="white")
+    FileocLable.grid(row=1, column=0, columnspan=2)
+
     Datafile = Entry(root1, width=30)
-    Datafile.insert(0, "Enter the file name")
-    Datafile.grid(row=0, column=1, padx=20)
+    Datafile.grid(row=0, column=2)
     FileLoc = Entry(root1, width=30)
-    FileLoc.insert(0 , "FileLocation")
-    FileLoc.grid(row=1, column=1, padx=20)
+    FileLoc.grid(row=1, column=2)
+    
     Bfile = Button(root1 ,text = 'filemode', command = lambda: EncFile(Datafile.get(), FileLoc.get())) 
-    Bfile.grid(row=0, column=2, padx=20)
+    Bfile.grid(row=0, column=3, padx=20)
     Bdata = Button(root1 ,text = 'datamode', command = lambda: EncData(Datafile.get(), FileLoc.get()))
     u = FileLoc.get()+'.txt'
-    Bdata.grid(row=1, column=2, padx=20)
+    Bdata.grid(row=1, column=3, padx=20)
     
     
 
 
 def DecFile(f, k, t):
-    key = k
+    key = k.encode()
     fer = Fernet(key)
-
+    f=f+".txt"
     with open(f) as x:
         y = x.readline()
         m = fer.decrypt(y).decode("UTF-8")
         messagebox.showinfo("Decrypted")
     
-    
+    t=t+".txt"
     with open(t, "a") as n:
         n.write(m)
     messagebox.showinfo("File Saved")    
@@ -282,9 +324,10 @@ def DecFile(f, k, t):
 
 def DecData(f, k , t) :
     
-    fer = Fernet(k)
+    fer = Fernet(k.encode())
     ll = fer.decrypt(f).decode("UTF-8")
     messagebox.showinfo("Decrypted", ll)
+    t=t+".txt"
     with open(t, "a") as n:
         n.write(ll)
     messagebox.showinfo("File Saved")
@@ -293,9 +336,20 @@ def DecData(f, k , t) :
 def Decryptdata():
     root = Tk()
     root.title("Decrypt Data")
-    root.geometry("480x240")
+    root.geometry("600x240")
     root.configure(background="#2c3e50")
     root.resizable(False, False)
+
+    DataLabel = Label(root, text="Enter the Data/FileName" , width=15)
+    DataLabel.config(background="#2c3e50" , foreground = "white")
+    DataLabel.grid(row=0, column=0, padx=20)
+    KeyLabel = Label(root, text="Enter the Key" , width=15)
+    KeyLabel.config(background="#2c3e50" , foreground = "white")
+    KeyLabel.grid(row=1, column=0, padx=20)
+    FileLocLabel = Label(root, text="Enter the File Location" , width=15)
+    FileLocLabel.config(background="#2c3e50" , foreground = "white")
+    FileLocLabel.grid(row=2, column=0, padx=20)
+    
     DataFile = Entry(root, width=30)
     DataFile.grid(row=0, column=1, padx=20)
     Keyyyyy = Entry(root, width=30)
@@ -303,15 +357,15 @@ def Decryptdata():
     FileLoc = Entry(root, width=30)
     FileLoc.grid(row=2, column=1, padx=20)
     Bfile = Button(
-        root, text="FileMode", command=lambda: DecFile(DataFile.get(), Keyyyyy.get() , FileLoc.get())
+        root, text="FileMode", command=lambda: DecFile(DataFile.get(), Keyyyyy.get() , FileLoc.get()) , width=30
     )
-    Bfile.grid(row=2, column=1, padx=20)
+    Bfile.grid(row=0, column=2, padx=20)
     Bdata = Button(
-        root, text="DataMode", command=lambda: DecData(DataFile.get(), Keyyyyy.get() , FileLoc.get())
+        root, text="DataMode", command=lambda: DecData(DataFile.get(), Keyyyyy.get() , FileLoc.get()) , width=30
     )
     
     
-    Bdata.grid(row=3, column=1, padx=20)
+    Bdata.grid(row=1, column=2, padx=20)
 
 
 def GeneratePassword(root):
@@ -332,7 +386,7 @@ def main():
     root.configure(background="#2c3e50")
     root.resizable(False, False)
     B1 = Button(root, text="Add Password", command=lambda: AddPassword(), width=30)
-    B2 = Button(root, text="View Passwords", command=lambda: ViewPassword(), width=30)
+    B2 = Button(root, text="View Passwords", command=lambda: Log(), width=30)
     B3 = Button(root, text="Encrypt Data", command=lambda: Encryptdata(), width=30)
     B4 = Button(root, text="Decrypt Data", command=lambda: Decryptdata(), width=30)
     B5 = Button(
@@ -354,7 +408,7 @@ def chkpass(Pass, win):
         key = k
         fer = Fernet(key)
 
-    with open("master.dat", "rb") as f:
+    with open("Master.dat", "rb") as f:
         try:
             x = pickle.load(f)
             o = fer.decrypt(x).decode("utf-8")
@@ -375,11 +429,14 @@ def master():
     root.geometry("480x240")
     root.configure(background="#2c3e50")
     root.resizable(False, False)
-    mp = Entry(root, width=50)
-    mp.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
+    Lab = Label(root, text="Master Password", width=15)
+    Lab.config(background= "#2c3e50" , foreground = "white")
+    Lab.grid(row=0, column=0, padx=20)
+    mp = Entry(root, width=25)
+    mp.grid(row=0, column=1, columnspan=2)
     mp.config(show="*")
     b1 = Button(root, text="Login", command=lambda: chkpass(mp.get(), root))
-    b1.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+    b1.grid(row=1, column=1, columnspan=2)
 
     root.mainloop()
 
